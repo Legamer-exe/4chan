@@ -8,13 +8,16 @@ let score = 0;
 let gameInterval;
 let isGameOver = false;
 
-function createInvaders() {
+function createRandomInvaders() {
     let invaderWidth = 40;
     let invaderHeight = 30;
-    for (let row = 0; row < 5; row++) {
-        for (let col = 0; col < 10; col++) {
-            invaders.push({ x: col * (invaderWidth + 10), y: row * (invaderHeight + 10), width: invaderWidth, height: invaderHeight });
-        }
+    let maxX = canvas.width - invaderWidth;
+
+    for (let i = 0; i < 3; i++) {
+        let randomX = Math.random() * maxX;
+        let randomY = Math.random() * (canvas.height / 2);
+
+        invaders.push({ x: randomX, y: randomY, width: invaderWidth, height: invaderHeight });
     }
 }
 
@@ -46,8 +49,17 @@ function movePlayer() {
 function moveBullets() {
     for (let i = 0; i < bullets.length; i++) {
         bullets[i].y -= 5;
-        if (bullets[i].y < 0) bullets.splice(i, 1); // Remove bullet when it goes off-screen
+        if (bullets[i].y < 0) bullets.splice(i, 1);
     }
+}
+
+function moveInvaders() {
+    invaders.forEach(invader => {
+        invader.y += 1;
+        if (invader.y + invader.height > canvas.height) {
+            isGameOver = true;
+        }
+    });
 }
 
 function checkCollisions() {
@@ -56,11 +68,12 @@ function checkCollisions() {
             let bullet = bullets[i];
             let invader = invaders[j];
 
-            if (bullet.x < invader.x + invader.width &&
+            if (
+                bullet.x < invader.x + invader.width &&
                 bullet.x + bullet.width > invader.x &&
                 bullet.y < invader.y + invader.height &&
-                bullet.y + bullet.height > invader.y) {
-                // Collision detected
+                bullet.y + bullet.height > invader.y
+            ) {
                 invaders.splice(j, 1);
                 bullets.splice(i, 1);
                 score += 10;
@@ -83,18 +96,28 @@ function draw() {
     }
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
     drawPlayer();
     drawInvaders();
     drawBullets();
+
     movePlayer();
     moveBullets();
+    moveInvaders();
+
     checkCollisions();
     updateScore();
 }
 
 function startGame() {
-    createInvaders();
-    gameInterval = setInterval(draw, 1000 / 60); // 60 FPS
+    createRandomInvaders();
+    gameInterval = setInterval(draw, 1000 / 100);
+
+    setInterval(() => {
+        if (!isGameOver) {
+            createRandomInvaders();
+        }
+    }, 5000);
 }
 
 function restartGame() {
@@ -107,19 +130,16 @@ function restartGame() {
     startGame();
 }
 
-// Key event listeners
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowLeft') player.dx = -player.speed;
+document.addEventListener('keydown', e => {
     if (e.key === 'ArrowRight') player.dx = player.speed;
+    if (e.key === 'ArrowLeft') player.dx = -player.speed;
     if (e.key === ' ') {
-        bullets.push({ x: player.x + player.width / 2 - 2, y: player.y, width: 4, height: 10 });
+        bullets.push({ x: player.x + player.width / 2 - 5, y: player.y, width: 5, height: 10 });
     }
 });
 
-document.addEventListener('keyup', (e) => {
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') player.dx = 0;
+document.addEventListener('keyup', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') player.dx = 0;
 });
-
-document.getElementById('restartButton').addEventListener('click', restartGame);
 
 startGame();
