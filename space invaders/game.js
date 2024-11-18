@@ -15,9 +15,8 @@ function createRandomInvaders() {
 
     for (let i = 0; i < 3; i++) {
         let randomX = Math.random() * maxX;
-        let randomY = Math.random() * (canvas.height / 2);
-
-        invaders.push({ x: randomX, y: randomY, width: invaderWidth, height: invaderHeight });
+        
+        invaders.push({ x: randomX, y: 40, width: invaderWidth, height: invaderHeight });
     }
 }
 
@@ -111,7 +110,7 @@ function draw() {
 
 function startGame() {
     createRandomInvaders();
-    gameInterval = setInterval(draw, 1000 / 100);
+    gameInterval = setInterval(draw, 1000 / 70);
 
     setInterval(() => {
         if (!isGameOver) {
